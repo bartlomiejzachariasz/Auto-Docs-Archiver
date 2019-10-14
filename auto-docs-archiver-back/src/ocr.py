@@ -17,8 +17,4 @@ class Reader:
     def prepare_text(self, text):
         return self.remove_whitespace(text)
 
-    @staticmethod
-    def remove_whitespace(text):
-        text = text.replace('\n', '')
-        text = text.replace('\t', '')
-        return re.sub(' +', ' ', text)
+
