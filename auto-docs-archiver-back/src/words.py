@@ -25,8 +25,7 @@ class Words:
         data = res.read()
         return data.decode("utf-8")
 
-    @staticmethod
-    def prepare_json_response(json_dict):
+    def prepare_json_response(self, json_dict):
         return {"word": json_dict["word"], "frequency": json_dict["frequency"],
                 "partOfSpeech": Words.check_part_of_speech(json_dict["results"])}
 
@@ -43,8 +42,7 @@ class Words:
     def save_word(self, json_data):
         self.db_connector.save("words", json_data)
 
-    @staticmethod
-    def check_part_of_speech(results):
+    def check_part_of_speech(self, results):
         occurrences = defaultdict(int)
 
         for result in results:

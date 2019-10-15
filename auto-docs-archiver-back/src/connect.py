@@ -12,8 +12,7 @@ class Connector:
         self.connector = MongoClient(self.uri)
         self.database = self.connector[database]
 
-    @staticmethod
-    def convert_to_uri(host, port):
+    def convert_to_uri(self, host, port):
         return f"mongodb://{host}:{port}"
 
     def find_by_column(self, collection, field, value):

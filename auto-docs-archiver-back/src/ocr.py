@@ -16,5 +16,3 @@ class Reader:
 
     def prepare_text(self, text):
         return self.remove_whitespace(text)
-
-

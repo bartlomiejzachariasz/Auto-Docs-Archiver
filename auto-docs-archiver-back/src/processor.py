@@ -10,23 +10,20 @@ from difflib import get_close_matches
 class Processor:
     accepted_parts_of_speech = ["adjective", "verb", "adverb"]
 
-    @staticmethod
-    def process_data(data_input):
+    def process_data(self, data_input):
         logging.info("process_data - invoked")
-        date = Processor.parse_date(data_input)
+        date = self.parse_date(data_input)
         if date is not None:
             data_input = data_input.replace(date, '')
-        data = Processor.word_count(data_input)
+        data = self.word_count(data_input)
         return {'date': date, 'data': data}
 
-    @staticmethod
-    def remove_whitespace(text):
+    def remove_whitespace(self, text):
         text = text.replace('\n', '')
         text = text.replace('\t', '')
         return re.sub(' +', ' ', text)
 
-    @staticmethod
-    def parse_date(string):
+    def parse_date(self, string):
         logging.info("parse_date - invoked")
         try:
             return parse(string, fuzzy=True)
@@ -41,8 +38,7 @@ class Processor:
             extracted_words.append(''.join(filter(str.isalpha, word)))
         return extracted_words
 
-    @staticmethod
-    def word_count(processed_data):
+    def word_count(self, processed_data):
         words = defaultdict(int)
         for word in processed_data.split(' '):
             words[word] += 1
@@ -54,8 +50,7 @@ class Processor:
     def filter_parts_of_speech(self, json_records):
         return filter(lambda record: record["partOfSpeech"] in self.accepted_parts_of_speech, json_records)
 
-    @staticmethod
-    def group_words(words):
+    def group_words(self, words):
         groups = []
 
         for word in words:
@@ -66,8 +61,7 @@ class Processor:
                     groups.append([word])
         return groups
 
-    @staticmethod
-    def get_most_common_words(groups):
+    def get_most_common_words(self, groups):
         most_common_words = []
 
         for group in groups:
