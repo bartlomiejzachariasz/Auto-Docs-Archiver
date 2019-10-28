@@ -6,19 +6,38 @@ from collections import defaultdict
 from dateutil.parser import parse
 from difflib import get_close_matches
 
+from src.words import Words
+
 
 class Processor:
     accepted_parts_of_speech = ["adjective", "verb", "adverb"]
 
+    def __init__(self, db_connector):
+        self.words = Words(db_connector=db_connector)
+
     def process_data(self, data_input):
         logging.info("process_data - invoked")
+
+        data = self.extract_data(data_input=data_input)
+
+        detailed_words = self.get_words_data(data)
+
+        filtered_words = self.filter_words(detailed_words)
+
+        return filtered_words
+
+    def extract_data(self, data_input) -> dict:
+        logging.info("extract_data - invoked")
+
         date = self.parse_date(data_input)
         if date is not None:
             data_input = data_input.replace(date, '')
-        data = self.word_count(data_input)
-        return {'date': date, 'data': data}
 
-    def remove_whitespace(self, text):
+        words = self.word_count(data_input)
+
+        return {'date': date, 'data': words}
+
+    def remove_whitespace(self, text) -> str:
         text = text.replace('\n', '')
         text = text.replace('\t', '')
         return re.sub(' +', ' ', text)
@@ -30,7 +49,7 @@ class Processor:
         except ValueError:
             return None
 
-    def extract_words(self, data):
+    def extract_words(self, data) -> list:
         data = self.remove_whitespace(data)
         words = data.split(' ')
         extracted_words = []
@@ -38,19 +57,32 @@ class Processor:
             extracted_words.append(''.join(filter(str.isalpha, word)))
         return extracted_words
 
-    def word_count(self, processed_data):
-        words = defaultdict(int)
-        for word in processed_data.split(' '):
-            words[word] += 1
-        return words
+    def word_count(self, processed_data) -> dict:
+        words_counter = defaultdict(lambda _: 0)
+        words = self.extract_words(processed_data)
+
+        for word in words:
+            words_counter[word] += 1
+        return words_counter
+
+    def get_words_data(self, words):
+        detailed_words = []
+        for word in words:
+            response = self.words.check_for_word(word)
+            if word is not None:
+                continue
+
+            detailed_words.append(response)
+
+        return detailed_words
 
     def filter_words(self, words):
-        words = self.filter_parts_of_speech(words)
+        return self.filter_parts_of_speech(words)
 
-    def filter_parts_of_speech(self, json_records):
-        return filter(lambda record: record["partOfSpeech"] in self.accepted_parts_of_speech, json_records)
+    def filter_parts_of_speech(self, words):
+        return filter(lambda record: record["partOfSpeech"] in self.accepted_parts_of_speech, words)
 
-    def group_words(self, words):
+    def group_words(self, words) -> list:
         groups = []
 
         for word in words:
