@@ -12,7 +12,8 @@ app = Flask(__name__)
 cors = CORS(app)
 reader = Reader()
 connector = Connector("localhost", 27017)
-connector.connect()
+connector.connect("test_db")
+processor = Processor(connector)
 
 
 @app.route("/health_check", methods=["GET"])
@@ -27,7 +28,7 @@ def health_check():
 def upload_image():
     file = request.files['file']
     extracted_text = reader.read(file)
-    resp = jsonify(Processor.process_data(data_input=extracted_text))
+    resp = jsonify(processor.process_data(data_input=extracted_text))
     resp.status_code = 200
     return resp
 

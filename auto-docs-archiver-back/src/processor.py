@@ -6,15 +6,21 @@ from collections import defaultdict
 from dateutil.parser import parse
 from difflib import get_close_matches
 
+from src.decorators import log
 from src.words import Words
 
 
 class Processor:
     accepted_parts_of_speech = ["adjective", "verb", "adverb"]
 
+    def get_name(self):
+        return self.get_name()
+
+    @log
     def __init__(self, db_connector):
         self.words = Words(db_connector=db_connector)
 
+    @log
     def process_data(self, data_input):
         logging.info("process_data - invoked")
 
@@ -26,6 +32,7 @@ class Processor:
 
         return filtered_words
 
+    @log
     def extract_data(self, data_input) -> dict:
         logging.info("extract_data - invoked")
 
@@ -37,11 +44,13 @@ class Processor:
 
         return {'date': date, 'data': words}
 
+    @log
     def remove_whitespace(self, text) -> str:
         text = text.replace('\n', '')
         text = text.replace('\t', '')
         return re.sub(' +', ' ', text)
 
+    @log
     def parse_date(self, string):
         logging.info("parse_date - invoked")
         try:
@@ -49,6 +58,7 @@ class Processor:
         except ValueError:
             return None
 
+    @log
     def extract_words(self, data) -> list:
         data = self.remove_whitespace(data)
         words = data.split(' ')
@@ -57,14 +67,16 @@ class Processor:
             extracted_words.append(''.join(filter(str.isalpha, word)))
         return extracted_words
 
+    @log
     def word_count(self, processed_data) -> dict:
-        words_counter = defaultdict(lambda _: 0)
+        words_counter = defaultdict(int)
         words = self.extract_words(processed_data)
 
         for word in words:
             words_counter[word] += 1
         return words_counter
 
+    @log
     def get_words_data(self, words):
         detailed_words = []
         for word in words:
@@ -76,8 +88,8 @@ class Processor:
 
         return detailed_words
 
-    def filter_words(self, words):
-        return self.filter_parts_of_speech(words)
+    def filter_words(self, words) -> list:
+        return list(self.filter_parts_of_speech(words))
 
     def filter_parts_of_speech(self, words):
         return filter(lambda record: record["partOfSpeech"] in self.accepted_parts_of_speech, words)

@@ -11,8 +11,5 @@ class Reader:
 
     def extract_text(self, filename):
         text = pytesseract.image_to_string(Image.open(filename))
-        prepared_text = self.prepare_text(text)
-        return prepared_text
+        return text
 
-    def prepare_text(self, text):
-        return self.remove_whitespace(text)
