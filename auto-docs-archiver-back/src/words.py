@@ -26,7 +26,6 @@ class Words:
 
     @log
     def check_for_word(self, word):
-        logging.info(" invoked from ")
         word_result = self.db_connector.find_by_column("words", "word", word)
         if word_result is None:
             data = self.get_word_data(word)

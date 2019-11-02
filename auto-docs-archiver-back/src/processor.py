@@ -22,8 +22,6 @@ class Processor:
 
     @log
     def process_data(self, data_input):
-        logging.info("process_data - invoked")
-
         data = self.extract_data(data_input=data_input)
 
         detailed_words = self.get_words_data(data)
@@ -52,7 +50,6 @@ class Processor:
 
     @log
     def parse_date(self, string):
-        logging.info("parse_date - invoked")
         try:
             return parse(string, fuzzy=True)
         except ValueError:
@@ -64,7 +61,7 @@ class Processor:
         words = data.split(' ')
         extracted_words = []
         for word in words:
-            extracted_words.append(''.join(filter(str.isalpha, word)))
+            extracted_words.append(''.join(filter(str.isalpha, word)).lower())
         return extracted_words
 
     @log
