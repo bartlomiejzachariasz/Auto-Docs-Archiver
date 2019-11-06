@@ -1,4 +1,4 @@
 auto-docs-archiver-back/src/config.py
 auto-docs-archiver-back/venv/*
 auto-docs-archiver-back/.idea/*
-__pycache__/*
+*.pyc

@@ -1,6 +1,6 @@
 FROM python:3.7
 ENV PYTHONUNBUFFERED 1
-ADD requirements.txt /back/requirements.txt
+COPY requirements.txt /back/requirements.txt
 WORKDIR /back
 RUN pip install -r requirements.txt
 COPY . /back

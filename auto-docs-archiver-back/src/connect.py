@@ -18,8 +18,8 @@ class Connector:
     def find_by_column(self, collection, field, value):
         current_collection = self.database[collection]
         query = {field: value}
-        return current_collection.find(query)
+        return current_collection.find_one(query)
 
     def save(self, collection, json_data):
-        current_collection = self.connector[collection]
+        current_collection = self.database[collection]
         current_collection.insert_one(json_data)

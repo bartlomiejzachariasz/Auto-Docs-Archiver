@@ -13,10 +13,6 @@ from src.words import Words
 class Processor:
     accepted_parts_of_speech = ["adjective", "verb", "adverb"]
 
-    def get_name(self):
-        return self.get_name()
-
-    @log
     def __init__(self, db_connector):
         self.words = Words(db_connector=db_connector)
 
@@ -28,7 +24,9 @@ class Processor:
 
         filtered_words = self.filter_words(detailed_words)
 
-        return filtered_words
+        data['data'] = self.get_most_common_words(self.group_words(filtered_words))
+
+        return data
 
     @log
     def extract_data(self, data_input) -> dict:
@@ -76,9 +74,10 @@ class Processor:
     @log
     def get_words_data(self, words):
         detailed_words = []
-        for word in words:
+        for word in words['data']:
             response = self.words.check_for_word(word)
-            if word is not None:
+
+            if response is None:
                 continue
 
             detailed_words.append(response)
@@ -96,15 +95,16 @@ class Processor:
 
         for word in words:
             for group in groups:
-                if len(get_close_matches(word, group)) > 0:
+                if len(get_close_matches(word['word'], list(map(lambda x: x['word'], group)), cutoff=0.8)) > 0:
                     group.append(word)
-                else:
-                    groups.append([word])
+            else:
+                groups.append([word])
         return groups
 
     def get_most_common_words(self, groups):
         most_common_words = []
 
         for group in groups:
-            most_common_words.append(max(group, key=lambda x: x['frequency']))
+            result = max(group, key=lambda x: x['frequency'])
+            most_common_words.append(result)
         return most_common_words

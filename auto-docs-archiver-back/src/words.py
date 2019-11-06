@@ -1,5 +1,5 @@
 import http.client
-import logging
+import json
 import operator
 from collections import defaultdict
 
@@ -29,10 +29,15 @@ class Words:
         word_result = self.db_connector.find_by_column("words", "word", word)
         if word_result is None:
             data = self.get_word_data(word)
+            data = json.loads(data)
+            if 'word' not in data.keys():
+                return None
             json_data = self.prepare_json_response(data)
             self.save_word(json_data)
+            del json_data["_id"]
             return json_data
         else:
+            del word_result["_id"]
             return word_result
 
     @log
@@ -43,9 +48,15 @@ class Words:
         return data.decode("utf-8")
 
     @log
-    def prepare_json_response(self, json_dict):
-        return {"word": json_dict["word"], "frequency": json_dict["frequency"],
-                "partOfSpeech": self.check_part_of_speech(json_dict["results"])}
+    def prepare_json_response(self, json_dict) -> dict:
+        json_response = {"word": json_dict["word"], "frequency": json_dict["frequency"]}
+        if "results" in json_dict.keys():
+            json_response["partOfSpeech"] = self.check_part_of_speech(json_dict["results"])
+        else:
+            json_response["partOfSpeech"] = "indefinite"
+
+        return json_response
+
 
     @log
     def save_word(self, json_data):
@@ -57,5 +68,8 @@ class Words:
 
         for result in results:
             occurrences[result["partOfSpeech"]] += 1
+
+        if len(occurrences) == 0:
+            return None
 
         return max(occurrences.items(), key=operator.itemgetter(1))[0]
