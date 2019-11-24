@@ -21,9 +21,6 @@ class Words:
 
         self.WORDS_API = "/words"
 
-    def get_name(self):
-        return self.__class__.__name__
-
     @log
     def check_for_word(self, word):
         word_result = self.db_connector.find_by_column("words", "word", word)
@@ -56,7 +53,6 @@ class Words:
             json_response["partOfSpeech"] = "indefinite"
 
         return json_response
-
 
     @log
     def save_word(self, json_data):

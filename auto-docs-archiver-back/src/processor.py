@@ -1,16 +1,15 @@
 import logging
-import re
 
 from collections import defaultdict
 
-from dateutil.parser import parse
 from difflib import get_close_matches
 
+from src.basic_processor import BasicProcessor
 from src.decorators import log
 from src.words import Words
 
 
-class Processor:
+class Processor(BasicProcessor):
     accepted_parts_of_speech = ["adjective", "verb", "adverb"]
 
     def __init__(self, db_connector):
@@ -32,7 +31,7 @@ class Processor:
     def extract_data(self, data_input) -> dict:
         logging.info("extract_data - invoked")
 
-        date = self.parse_date(data_input)
+        date = super().parse_date(data_input)
         if date is not None:
             data_input = data_input.replace(date, '')
 
@@ -41,31 +40,9 @@ class Processor:
         return {'date': date, 'data': words}
 
     @log
-    def remove_whitespace(self, text) -> str:
-        text = text.replace('\n', '')
-        text = text.replace('\t', '')
-        return re.sub(' +', ' ', text)
-
-    @log
-    def parse_date(self, string):
-        try:
-            return parse(string, fuzzy=True)
-        except ValueError:
-            return None
-
-    @log
-    def extract_words(self, data) -> list:
-        data = self.remove_whitespace(data)
-        words = data.split(' ')
-        extracted_words = []
-        for word in words:
-            extracted_words.append(''.join(filter(str.isalpha, word)).lower())
-        return extracted_words
-
-    @log
     def word_count(self, processed_data) -> dict:
         words_counter = defaultdict(int)
-        words = self.extract_words(processed_data)
+        words = super().extract_words(processed_data)
 
         for word in words:
             words_counter[word] += 1

@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
+from src.config import DB_CONFIG
 from src.processor import Processor
 from ..connect import Connector
 
@@ -11,8 +12,8 @@ from src.ocr import Reader
 app = Flask(__name__)
 cors = CORS(app)
 reader = Reader()
-connector = Connector("localhost", 27017)
-connector.connect("test_db")
+connector = Connector(DB_CONFIG["host"], DB_CONFIG["port"])
+connector.connect(DB_CONFIG["db_name"])
 processor = Processor(connector)
 
 
