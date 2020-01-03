@@ -1,0 +1,5 @@
+{
+  "SECRET_KEY": "KEY",
+  "JWT_TOKEN_LOCATION": "headers",
+  "JWT_ACCESS_TOKEN_EXPIRES": 30000
+}
