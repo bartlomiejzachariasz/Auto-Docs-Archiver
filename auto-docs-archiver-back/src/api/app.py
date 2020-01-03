@@ -11,7 +11,7 @@ from flask_jwt_extended import JWTManager
 from src.api.auth import Authenticator
 from src.utils.basic_processor import BasicProcessor
 from src.utils.classifier import Classifier
-from src.resources.config import DB_CONFIG
+from src.resources.config import DB_CONFIG, AWS_CONFIG
 from src.utils.decorators import auth_required
 from src.legacy.processor import Processor
 from src.utils.xes_generator import XesGenerator
@@ -149,7 +149,7 @@ def download_from_s3(filename):
     s3 = boto3.resource('s3')
 
     output = filename
-    s3.Bucket('autoarchiverfiles').download_file(filename, output)
+    s3.Bucket(AWS_CONFIG["bucket_name"]).download_file(filename, output)
 
     return output
 
@@ -158,7 +158,7 @@ def upload_to_s3(file, filename):
     s3_client = boto3.client('s3')
     try:
         with open(file, 'rb') as f:
-            s3_client.upload_fileobj(f, 'autoarchiverfiles', filename)
+            s3_client.upload_fileobj(f, AWS_CONFIG["bucket_name"], filename)
     except Exception:
         abort(500)
 
