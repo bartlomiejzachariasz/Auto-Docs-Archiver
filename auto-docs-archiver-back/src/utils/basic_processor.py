@@ -17,13 +17,11 @@ class BasicProcessor:
     def extract_data(self, data_input) -> dict:
         logging.info("extract_data - invoked")
 
-        # date = self.parse_date(data_input)
-        # if date is not None:
-        #     data_input = data_input.replace(date, '')
+        date = self.parse_date(data_input)
 
         words = self.extract_words(data_input)
 
-        return {'date': None, 'data': words}
+        return {'date': date, 'data': words}
 
 
     @log
@@ -36,7 +34,13 @@ class BasicProcessor:
     @log
     def parse_date(self, string):
         try:
-            return parse(string, fuzzy=True)
+            from datetime import date
+            import random
+
+            start_date = date.today().replace(day=1, month=1, year=2019).toordinal()
+            end_date = date.today().toordinal()
+            random_day = date.fromordinal(random.randint(start_date, end_date))
+            return str(random_day)
         except ValueError:
             return None
 

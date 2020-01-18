@@ -6,7 +6,7 @@ from difflib import get_close_matches
 
 from src.utils.basic_processor import BasicProcessor
 from src.utils.decorators import log
-from src.legacy.words import Words
+from legacy import Words
 
 
 class Processor(BasicProcessor):

@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pymongo import MongoClient
 
 
@@ -40,3 +41,7 @@ class Connector:
         current_collection = self.database[collection]
         query = {field: value}
         return current_collection.delete_one(query)
+
+    def update(self, collection, field, value, update_field, update_value):
+        current_collection = self.database[collection]
+        current_collection.update({field: value}, {'$set': {update_field: update_value}})

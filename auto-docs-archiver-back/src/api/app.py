@@ -1,6 +1,5 @@
 import json
 import logging
-import io
 import boto3
 
 from bson import ObjectId
@@ -9,12 +8,11 @@ from flask_cors import CORS, cross_origin
 from flask_jwt_extended import JWTManager
 
 from src.api.auth import Authenticator
+from src.errors.errors import UserNotFound
 from src.utils.basic_processor import BasicProcessor
 from src.utils.classifier import Classifier
 from src.resources.config import DB_CONFIG, AWS_CONFIG
 from src.utils.decorators import auth_required
-from src.legacy.processor import Processor
-from src.utils.xes_generator import XesGenerator
 from src.utils.connect import Connector
 
 import datetime
@@ -28,11 +26,9 @@ cors = CORS(app)
 reader = Reader()
 connector = Connector(DB_CONFIG["host"], DB_CONFIG["port"])
 connector.connect(DB_CONFIG["db_name"])
-processor = Processor(connector)
 basic_processor = BasicProcessor()
 authenticator = Authenticator(db_connector=connector)
 classifier = Classifier()
-xes_generator = XesGenerator()
 traces = []
 
 
@@ -42,12 +38,6 @@ def health_check():
     resp = jsonify(datetime.datetime.now())
     resp.status_code = 201
     return resp
-
-
-@app.route("/generate", methods=["GET"])
-@auth_required
-def generate():
-    return xes_generator.generate(traces)
 
 
 @app.route("/auth/signin", methods=["POST"])
@@ -61,6 +51,20 @@ def sign_in():
         abort(403)
 
 
+@app.route("/auth/register", methods=["POST"])
+def register():
+    try:
+        credentials = json.loads(request.data.decode('utf-8'))
+        user = connector.find_by_column("users", "username", credentials['username'], single=True)
+        if user is not None:
+            abort(409)
+        connector.save("users", credentials)
+        return Response(status=201)
+    except Exception as error:
+        logging.error(f'Error: {error}')
+        abort(500)
+
+
 @app.route("/documents", methods=["GET"])
 @auth_required
 def get_all_documents():
@@ -71,7 +75,7 @@ def get_all_documents():
 
         response = [{
             "id": str(document['_id']),
-            "date": "test_string",
+            "date": str(document['date']),
             "category": document['category']
         } for document in documents]
 
@@ -105,16 +109,36 @@ def get_document(doc_id):
     try:
         user = authenticator.get_authenticated_user()
         document = connector.find_by_column("documents", "_id", ObjectId(doc_id), single=True)
-        if document["user_id"] != str(user["_id"]):
+        if str(document["user_id"]) != str(user["_id"]):
             abort(403)
         else:
-            file = download_from_s3(document["filename"])
+            file_path = get_image_url(str(document["_id"]))
 
-            with open(file, 'rb') as f:
-                return send_file(
-                    io.BytesIO(f.read()),
-                    attachment_filename=file,
-                    mimetype='image/jpeg')
+            response = {
+                "id": doc_id,
+                "date": str(document["date"]),
+                "category": document["category"],
+                "file_path": file_path
+            }
+
+            return make_response(jsonify(response))
+    except Exception as error:
+        logging.error(error)
+        abort(403)
+
+
+@app.route("/documents/<doc_id>", methods=["PUT"])
+@auth_required
+def update_id(doc_id):
+    try:
+        credentials = json.loads(request.data.decode('utf-8'))
+        user = authenticator.get_authenticated_user()
+        document = connector.find_by_column("documents", "_id", ObjectId(doc_id), single=True)
+        if str(document["user_id"]) != str(user["_id"]):
+            abort(403)
+        else:
+            connector.update("documents", "_id", ObjectId(doc_id), "date", credentials["date"])
+            return Response(status=201)
     except Exception as error:
         logging.error(error)
         abort(403)
@@ -126,6 +150,7 @@ def upload_document():
     try:
         user = authenticator.get_authenticated_user()
         file = request.files['file']
+
         file.save(file.filename)
         extracted_text = reader.read(file)
         processed_text = basic_processor.process_data(extracted_text)
@@ -135,14 +160,16 @@ def upload_document():
 
         _id = connector.save("documents", {
             "category": category,
-            "date": "test_date",
+            "date": processed_text['date'] if processed_text['date'] is not None else 'unknown',
             "user_id": str(user_id["_id"])
         })
+
         upload_to_s3(file.filename, str(_id))
-        return Response(status=201)
+        return str(_id)
+
     except Exception as error:
         logging.error(error)
-        abort(403)
+        abort(500)
 
 
 def download_from_s3(filename):
@@ -158,9 +185,15 @@ def upload_to_s3(file, filename):
     s3_client = boto3.client('s3')
     try:
         with open(file, 'rb') as f:
-            s3_client.upload_fileobj(f, AWS_CONFIG["bucket_name"], filename)
+            s3_client.upload_fileobj(f, AWS_CONFIG["bucket_name"], f'{filename}.jpg')
     except Exception:
         abort(500)
+
+
+def get_image_url(file_id):
+    s3_client = boto3.client('s3')
+    location = s3_client.get_bucket_location(Bucket=AWS_CONFIG["bucket_name"])['LocationConstraint']
+    return f'https://s3-{location}.amazonaws.com/{AWS_CONFIG["bucket_name"]}/{file_id}.jpg'
 
 
 if __name__ == "__main__":

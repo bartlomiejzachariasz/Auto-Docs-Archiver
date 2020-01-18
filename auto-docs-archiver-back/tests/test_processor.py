@@ -1,5 +1,5 @@
 from unittest.mock import Mock
-from src.processor import Processor
+from legacy import Processor
 
 db_connector_mock = Mock()
 

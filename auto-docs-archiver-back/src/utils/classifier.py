@@ -1,10 +1,12 @@
 import os
 import pandas as pd
+import sys
 
 from stempel import StempelStemmer
 from sklearn import model_selection, naive_bayes, svm
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.externals import joblib
 
 from src.utils.basic_processor import BasicProcessor
 from src.resources.config import DATA_CONFIG
@@ -38,10 +40,11 @@ class Classifier:
         self.get_data()
         self.train_model()
 
+
     def train_model(self):
         train_X, test_X, train_Y, test_Y = model_selection.train_test_split(self.corpus['text_final'],
                                                                             self.corpus['title'],
-                                                                            test_size=0.3)
+                                                                            test_size=0.25)
 
         train_Y = self.encoder.fit_transform(train_Y)
         test_Y = self.encoder.fit_transform(test_Y)
@@ -54,11 +57,12 @@ class Classifier:
         self.bayes = naive_bayes.MultinomialNB()
         self.bayes.fit(train_X_tfidf, train_Y)
 
-        self.svm_model = svm.SVC(C=65536.0, degree=3, gamma=1.52587890625e-05)
-        self.svm_model.fit(train_X_tfidf, train_Y)
+        self.svm_model = joblib.load('svm')
 
     def get_data(self):
-        dataset = os.listdir(self.DATASET_PATH)
+        file_dir = os.path.dirname(os.path.realpath('__file__'))
+        rel_filename = os.path.join(file_dir, self.DATASET_PATH)
+        dataset = os.listdir(rel_filename)
         data = []
         for datafile in dataset:
             if datafile == '.DS_Store':
@@ -112,6 +116,8 @@ class Classifier:
             return "Dokument nierozpoznany"
 
     def read_file(self, filename):
-        with open(filename, 'r') as f:
+        file_dir = os.path.dirname(os.path.realpath('__file__'))
+        rel_filename = os.path.join(file_dir, filename)
+        with open(rel_filename, 'r') as f:
             text = f.read()
         return text
