@@ -3,10 +3,10 @@ version: "3"
 services:
   db:
     image: mongo
-    ports:
-      - "27017:27017"
     environment:
       - MONGO_INITDB_DATABASE=test_db
+    volumes:
+      - ./mongo_volume:/data/db
     stdin_open: true
     tty: true
 
@@ -16,3 +16,15 @@ services:
       - "8000:8000"
     depends_on:
       - db
+  frontend:
+    build: ./auto-docs-archiver-front
+    ports:
+      - "4201:4200"
+    volumes:
+      - ./auto-docs-archiver-front:/app
+      - /app/node_modules
+    links:
+      - db
+    depends_on:
+      - db
+      - backend
