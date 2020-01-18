@@ -4,18 +4,13 @@ DB_CONFIG = {
     "db_name": "test_db"
 }
 
-# DATA_CONFIG = {
-#     "data_path": "/Users/bartek/auto-docs-archiver-back/src/data",
-#     "stopwords_path": "/Users/bartek/auto-docs-archiver-back/src/resources/stopwords"
-# }
-
 DATA_CONFIG = {
-    "data_path": "data",
-    "stopwords_path": "resources/stopwords"
+    "data_path": "src/data",
+    "stopwords_path": "src/resources/stopwords"
 }
 
 AWS_CONFIG = {
-    "bucket_name": "autoarchiverfiles"
+    "bucket_name": "BUCKET_NAME"
 }
 
 SERVER_CONFIG = {
