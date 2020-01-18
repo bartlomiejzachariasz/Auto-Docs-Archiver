@@ -1,0 +1,11 @@
+<a
+  class="list-group-item clearfix"
+  (click)="onSelect()">
+  <div class="pull-left">
+    <p class="list-group-item-text" *ngIf="documentInfo.date !== 'unknown'">{{documentInfo.date}}</p>
+    <p class="list-group-item-text" *ngIf="documentInfo.date === 'unknown'">Nierozpoznana data</p>
+  </div>
+  <span class="pull-right">
+    <h5>{{documentInfo.category}}</h5>
+  </span>
+</a>

@@ -1,0 +1,3 @@
+<app-navbar  *ngIf="!tokenStorage.getUsername()" style="padding-bottom: 20px"></app-navbar>
+<app-logged *ngIf="tokenStorage.getUsername()" (logOutEvent)="logUserOut()"></app-logged>
+<router-outlet></router-outlet>

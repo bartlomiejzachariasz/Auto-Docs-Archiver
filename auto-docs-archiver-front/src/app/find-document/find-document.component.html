@@ -1,0 +1,10 @@
+<div class="row">
+  <div class="col-md-6">
+    <app-documents-list (chosenDocumentEvent)="selectDocument($event)"></app-documents-list>
+  </div>
+
+  <div class="col-md-5 col-md-offset-1"
+       *ngIf="documentsService.documentsList && documentsService.documentsList.length > 0">
+    <router-outlet></router-outlet>
+  </div>
+</div>

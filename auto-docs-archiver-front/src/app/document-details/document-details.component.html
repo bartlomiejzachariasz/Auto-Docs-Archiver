@@ -1,0 +1,16 @@
+<div class="row" *ngIf="selectedDocument">
+  <div class="col-xs-12">
+    <h1 style="text-align: center;">{{selectedDocument.category}}</h1>
+    <h2 style="text-align: center;" *ngIf="selectedDocument.date != 'unknown'">{{selectedDocument.date}}</h2>
+    <div class="alert alert-danger" *ngIf="selectedDocument.date == 'unknown' || selectedDocument.date ==''">
+      <p style="align-content: center">
+        Data nie została wykryta, proszę wpisać ręcznie.
+      </p>
+      <div class="form-group" style="alignment: center">
+        <input value="" type="text" [(ngModel)]="selectedDocument.date"/>
+        <button class="btn btn-primary" (click)="updateDate()">Zapisz</button>
+      </div>
+    </div>
+    <img src="{{selectedDocument.file_path}}"/>
+  </div>
+</div>

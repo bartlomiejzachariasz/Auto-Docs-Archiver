@@ -1,0 +1,27 @@
+<div class="col-md-10 col-md-offset-4">
+  <div class="row" style="padding-top: 10px">
+    <div class="col-md-6">
+      <h2 class="pull-left">Twoje dokumenty</h2>
+    </div>
+    <div class="col-md-6">
+      <button class="btn btn-primary float-right" (click)="uploader.click()">Dodaj nowy dokument</button>
+    </div>
+    <input hidden type="file" #uploader
+           (change)="uploadFile($event)"/>
+    <div class="col-md-7">
+      <input class="form-control" style="width: available" [(ngModel)]="searchBox"/>
+    </div>
+    <div class="col-md-5">
+      <button class="btn btn-danger float-right" (click)="resetFilters()">Zresetuj</button>
+      <button class="btn btn-primary float-right" (click)="search()">Wyszukaj</button>
+    </div>
+  </div>
+  <hr/>
+  <div class="row">
+    <div class="col-md-12" *ngIf="documentsService.documentsList && documentsService.documentsList.length > 0">
+      <app-document-element *ngFor="let documentElement of documentsService.documentsList"
+                            (chosenDocumentEvent)="chosenDocument($event)"
+                            [documentInfo]="documentElement"></app-document-element>
+    </div>
+  </div>
+</div>
